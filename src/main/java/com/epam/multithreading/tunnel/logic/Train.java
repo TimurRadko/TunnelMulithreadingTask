@@ -1,6 +1,5 @@
 package com.epam.multithreading.tunnel.logic;
 
-import com.epam.multithreading.tunnel.exception.TunnelAccidentException;
 import com.epam.multithreading.tunnel.model.Rail;
 import com.epam.multithreading.tunnel.model.Tunnel;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -42,12 +41,8 @@ public class Train implements Runnable {
 
     @Override
     public void run() {
-        try {
-            Rail rail = tunnel.getRail();
-            rail.driveThroughTunnel(this);
-        } catch (TunnelAccidentException e) {
-            LOGGER.error(String.format("An accident in the tunnel: %s", e.getMessage()));
-        }
+        Rail rail = tunnel.getRail();
+        rail.driveThroughTunnel(this);
     }
 
     @Override
