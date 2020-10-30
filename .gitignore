@@ -16,5 +16,5 @@ test-output/
 [Tt]humbs.db
 /.idea/
 .idea/
-/logs/
 /out/
+/logs/

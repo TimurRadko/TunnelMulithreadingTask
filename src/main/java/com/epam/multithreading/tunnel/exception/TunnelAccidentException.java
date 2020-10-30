@@ -1,6 +1,7 @@
 package com.epam.multithreading.tunnel.exception;
 
 public class TunnelAccidentException extends Exception {
+
     public TunnelAccidentException(String message) {
         super(message);
     }

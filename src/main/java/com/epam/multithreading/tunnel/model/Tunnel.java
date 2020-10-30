@@ -1,26 +1,27 @@
 package com.epam.multithreading.tunnel.model;
 
+import com.epam.multithreading.tunnel.exception.TunnelAccidentException;
+
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Tunnel {
     private static Tunnel instance = null;
     private static final ReentrantLock TUNNEL_LOCKER = new ReentrantLock();
-    private final Semaphore SEMAPHORE = new Semaphore(2, true);
+    private final Deque<Rail> rails = new LinkedList<>(
+            Arrays.asList(
+                    new Rail(),
+                    new Rail()
+            )
+    );
+    private final Semaphore SEMAPHORE = new Semaphore(rails.size(), true);
+    private final ReentrantLock RAILS_LOCK = new ReentrantLock();
 
-//    private Queue<Rail> availableRails = new LinkedList<>();
-//    private Queue<Rail> usedRails = new LinkedList<>();
-//    private ReentrantLock RAILS_LOCK = new ReentrantLock();
-//    private static final Rail FIRST_RAIL = new Rail();
-//    private static final Rail SECOND_RAIL = new Rail();
-
-    protected Rail[] rails = {new Rail(), new Rail()};
-    protected boolean[] used = new boolean[rails.length];
-    private static final int MAX_AVAILABLE = 2;
 
     private Tunnel() {
-//        availableRails.add(FIRST_RAIL);
-//        availableRails.add(SECOND_RAIL);
     }
 
     public static Tunnel getInstance() {
@@ -39,73 +40,27 @@ public class Tunnel {
         return instance;
     }
 
-    public Rail getRail() {
+    public Rail getRail() throws TunnelAccidentException {
+        Rail localRail;
         try {
             SEMAPHORE.acquire();
+            RAILS_LOCK.lock();
+            localRail = rails.poll();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            throw new TunnelAccidentException(String.format("An accident in the tunnel: %s", e.getMessage()));
+        } finally {
+            RAILS_LOCK.unlock();
         }
-        return getNextAvailableRail();
+        return localRail;
     }
 
-    public void putRail(Rail rail) {
-        if (markAsUnused(rail))
-            SEMAPHORE.release();
-    }
-
-    protected synchronized Rail getNextAvailableRail() {
-        for (int i = 0; i < MAX_AVAILABLE; ++i) {
-            if (!used[i]) {
-                used[i] = true;
-                return rails[i];
-            } else {
-                markAsUnused(rails[i]);
-            }
+    public void releaseRail(Rail rail) {
+        RAILS_LOCK.lock();
+        try {
+            rails.offer(rail);
+        } finally {
+            RAILS_LOCK.unlock();
         }
-        return null; // not reached
+        SEMAPHORE.release();
     }
-
-    protected synchronized boolean markAsUnused(Rail rail) {
-        for (int i = 0; i < MAX_AVAILABLE; ++i) {
-            if (rail == rails[i]) {
-                if (used[i]) {
-                    used[i] = false;
-                    return true;
-                } else
-                    return false;
-            }
-        }
-        return false;
-    }
-
-
-//    public Rail getRail() {
-//        try {
-//            SEMAPHORE.acquire();
-//            return getNextRail();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        } finally {
-//            SEMAPHORE.release();
-//        }
-//        return null;
-//    }
-//
-//    private Rail getNextRail() {
-//        if (availableRails.peek() != null) {
-//            Rail rail = availableRails.poll();
-//            usedRails.add(rail);
-//            return rail;
-//        } else {
-//            putRail();
-//        }
-//        return null;
-//    }
-//
-//    private void putRail() {
-//        if (usedRails.peek() != null) {
-//            Rail rail = usedRails.poll();
-//            availableRails.add(rail);
-//        }
-//    }
 }

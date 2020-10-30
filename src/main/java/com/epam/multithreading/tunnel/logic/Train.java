@@ -1,10 +1,13 @@
 package com.epam.multithreading.tunnel.logic;
 
+import com.epam.multithreading.tunnel.exception.TunnelAccidentException;
 import com.epam.multithreading.tunnel.model.Rail;
 import com.epam.multithreading.tunnel.model.Tunnel;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Objects;
 
 @JsonAutoDetect
 public class Train implements Runnable {
@@ -40,9 +43,42 @@ public class Train implements Runnable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o)  {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Train train = (Train) o;
+
+        if (id != train.id) {
+            return false;
+        }
+        if (state != train.state) {
+            return false;
+        }
+        return Objects.equals(tunnel, train.tunnel);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id;
+        result = 31 * result + (state ? 1 : 0);
+        result = 31 * result + (tunnel != null ? tunnel.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public void run() {
-        Rail rail = tunnel.getRail();
-        rail.driveThroughTunnel(this);
+        Rail rail;
+        try {
+            rail = tunnel.getRail();
+            rail.driveThroughTunnel(this);
+        } catch (TunnelAccidentException e) {
+            LOGGER.error(String.format("An accident in the tunnel: %s", e.getMessage()));
+        }
     }
 
     @Override
