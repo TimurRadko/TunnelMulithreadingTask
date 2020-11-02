@@ -15,7 +15,5 @@ public class Rail {
             train.setState(true);
             LOGGER.info(String.format(AFTER_TUNNEL, train.getId(), train.isState()));
         }
-        Tunnel tunnel = train.getTunnel();
-        tunnel.releaseRail(this);
     }
 }

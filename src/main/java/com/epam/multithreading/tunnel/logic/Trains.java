@@ -1,17 +1,15 @@
 package com.epam.multithreading.tunnel.logic;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-@JsonAutoDetect
 public class Trains {
-    private List<Train> trains;
+    private final List<Train> trains;
 
-    public Trains() {
-    }
-
-    public void setTrains(List<Train> trains) {
+    @JsonCreator
+    public Trains(@JsonProperty("trains")List<Train> trains) {
         this.trains = trains;
     }
 

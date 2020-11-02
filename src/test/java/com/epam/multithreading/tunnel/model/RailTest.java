@@ -20,5 +20,4 @@ public class RailTest {
         rail.driveThroughTunnel(SECOND_TRAIN);
         Assert.assertTrue(SECOND_TRAIN.isState());
     }
-
 }
